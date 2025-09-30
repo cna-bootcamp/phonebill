@@ -218,37 +218,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set image tag environment variable
-        run: |
-          echo "IMAGE_TAG=${{ needs.build.outputs.image_tag }}" >> $GITHUB_ENV
-          echo "ENVIRONMENT=${{ needs.build.outputs.environment }}" >> $GITHUB_ENV
+    - name: Set image tag environment variable
+      run: |
+        echo "IMAGE_TAG=${{ needs.build.outputs.image_tag }}" >> $GITHUB_ENV
+        echo "ENVIRONMENT=${{ needs.build.outputs.environment }}" >> $GITHUB_ENV
 
-      - name: Update Manifest Repository
-        run: |
-          # 매니페스트 레포지토리 클론
-          REPO_URL=$(echo "https://github.com/cna-bootcamp/phonebill-manifest.git" | sed 's|https://||')
-          git clone https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_PASSWORD }}@${REPO_URL} manifest-repo
-          cd manifest-repo
+    - name: Update Manifest Repository
+      run: |
+        # 매니페스트 레포지토리 클론
+        REPO_URL=$(echo "https://github.com/cna-bootcamp/phonebill-manifest.git" | sed 's|https://||')
+        git clone https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_PASSWORD }}@${REPO_URL} manifest-repo
+        cd manifest-repo
 
-          # Kustomize 설치
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          sudo mv kustomize /usr/local/bin/
+        # Kustomize 설치
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/
 
-          # 매니페스트 업데이트
-          cd phonebill/kustomize/overlays/${{ env.ENVIRONMENT }}
+        # 매니페스트 업데이트
+        cd phonebill/kustomize/overlays/${{ env.ENVIRONMENT }}
 
-          # 각 서비스별 이미지 태그 업데이트
-          services="api-gateway user-service bill-service product-service kos-mock"
-          for service in $services; do
-            kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/$service:${{ env.ENVIRONMENT }}-${{ env.IMAGE_TAG }}
-          done
+        # 각 서비스별 이미지 태그 업데이트
+        services="api-gateway user-service bill-service product-service kos-mock"
+        for service in $services; do
+          kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/$service:${{ env.ENVIRONMENT }}-${{ env.IMAGE_TAG }}
+        done
 
-          # Git 설정 및 푸시
-          cd ../../../..
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add .
-          git commit -m "🚀 Update phonebill ${{ env.ENVIRONMENT }} images to ${{ env.ENVIRONMENT }}-${{ env.IMAGE_TAG }}"
-          git push origin main
+        # Git 설정 및 푸시
+        cd ../../../..
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "🚀 Update phonebill ${{ env.ENVIRONMENT }} images to ${{ env.ENVIRONMENT }}-${{ env.IMAGE_TAG }}"
+        git push origin main
 
-          echo "✅ 매니페스트 업데이트 완료. ArgoCD가 자동으로 배포합니다."
+        echo "✅ 매니페스트 업데이트 완료. ArgoCD가 자동으로 배포합니다."

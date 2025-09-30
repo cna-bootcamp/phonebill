@@ -91,17 +91,6 @@ podTemplate(
                 props = readProperties file: "deployment/cicd/config/deploy_env_vars_${environment}"
             }
 
-            stage("Setup AKS") {
-                container('azure-cli') {
-                    withCredentials([azureServicePrincipal('azure-credentials')]) {
-                        sh """
-                            az login --service-principal -u \$AZURE_CLIENT_ID -p \$AZURE_CLIENT_SECRET -t \$AZURE_TENANT_ID
-                            az aks get-credentials --resource-group ${props.resource_group} --name ${props.cluster_name} --overwrite-existing
-                            kubectl create namespace phonebill-dg0500 --dry-run=client -o yaml | kubectl apply -f -
-                        """
-                    }
-                }
-            }
 
             stage('Build') {
                 container('gradle') {
@@ -192,22 +181,19 @@ podTemplate(
                             git clone https://\${GIT_USERNAME}:\${GIT_TOKEN}@\${REPO_URL} manifest-repo
                             cd manifest-repo
 
-                            # Kustomize 설치
-                            curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-                            mkdir -p \$HOME/bin && mv kustomize \$HOME/bin/
-                            export PATH=\$PATH:\$HOME/bin
-
-                            # 환경별 매니페스트 업데이트
-                            cd phonebill/kustomize/overlays/${environment}
-
-                            # 각 서비스별 이미지 태그 업데이트
+                            # 각 서비스별 이미지 태그 업데이트 (sed 명령 사용)
                             services="api-gateway user-service bill-service product-service kos-mock"
                             for service in \$services; do
-                                \$HOME/bin/kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/\$service:${environment}-${imageTag}
+                                echo "Updating \$service image tag..."
+                                sed -i "s|image: acrdigitalgarage01.azurecr.io/phonebill/\$service:.*|image: acrdigitalgarage01.azurecr.io/phonebill/\$service:${environment}-${imageTag}|g" \\
+                                    phonebill/kustomize/base/\$service/deployment.yaml
+
+                                # 변경 사항 확인
+                                echo "Updated \$service deployment.yaml:"
+                                grep "image: acrdigitalgarage01.azurecr.io/phonebill/\$service" phonebill/kustomize/base/\$service/deployment.yaml
                             done
 
                             # Git 설정 및 푸시
-                            cd ../../../..
                             git config user.name "Jenkins CI"
                             git config user.email "jenkins@example.com"
                             git add .
