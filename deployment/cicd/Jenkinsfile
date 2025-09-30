@@ -1,0 +1,225 @@
+def PIPELINE_ID = "${env.BUILD_NUMBER}"
+
+def getImageTag() {
+    def dateFormat = new java.text.SimpleDateFormat('yyyyMMddHHmmss')
+    def currentDate = new Date()
+    return dateFormat.format(currentDate)
+}
+
+podTemplate(
+    label: "${PIPELINE_ID}",
+    serviceAccount: 'jenkins',
+    slaveConnectTimeout: 300,
+    idleMinutes: 1,
+    activeDeadlineSeconds: 3600,
+    podRetention: never(),  // 파드 자동 정리 옵션: never(), onFailure(), always(), default()
+    yaml: '''
+        spec:
+          terminationGracePeriodSeconds: 3
+          restartPolicy: Never
+          tolerations:
+          - effect: NoSchedule
+            key: dedicated
+            operator: Equal
+            value: cicd
+    ''',
+    containers: [
+        containerTemplate(
+            name: 'podman',
+            image: "mgoltzsche/podman",
+            ttyEnabled: true,
+            command: 'cat',
+            privileged: true,
+            resourceRequestCpu: '500m',
+            resourceRequestMemory: '2Gi',
+            resourceLimitCpu: '2000m',
+            resourceLimitMemory: '4Gi'
+        ),
+        containerTemplate(
+            name: 'gradle',
+            image: 'gradle:jdk21',
+            ttyEnabled: true,
+            command: 'cat',
+            resourceRequestCpu: '500m',
+            resourceRequestMemory: '1Gi',
+            resourceLimitCpu: '1000m',
+            resourceLimitMemory: '2Gi',
+            envVars: [
+                envVar(key: 'DOCKER_HOST', value: 'unix:///run/podman/podman.sock'),
+                envVar(key: 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', value: '/run/podman/podman.sock'),
+                envVar(key: 'TESTCONTAINERS_RYUK_DISABLED', value: 'true')
+            ]
+        ),
+        containerTemplate(
+            name: 'azure-cli',
+            image: 'hiondal/azure-kubectl:latest',
+            command: 'cat',
+            ttyEnabled: true,
+            resourceRequestCpu: '200m',
+            resourceRequestMemory: '512Mi',
+            resourceLimitCpu: '500m',
+            resourceLimitMemory: '1Gi'
+        )
+    ],
+    volumes: [
+        emptyDirVolume(mountPath: '/home/gradle/.gradle', memory: false),
+        emptyDirVolume(mountPath: '/root/.azure', memory: false),
+        emptyDirVolume(mountPath: '/run/podman', memory: false)
+    ]
+) {
+    node(PIPELINE_ID) {
+        def props
+        //def imageTag = getImageTag()
+        def imageTag = "dg0500"
+        def environment = params.ENVIRONMENT ?: 'dev'
+        def skipSonarQube = (params.SKIP_SONARQUBE?.toLowerCase() == 'true')
+        def services = ['api-gateway', 'user-service', 'bill-service', 'product-service', 'kos-mock']
+
+        try {
+            stage("Get Source") {
+                checkout scm
+                props = readProperties file: "deployment/cicd/config/deploy_env_vars_${environment}"
+            }
+
+            stage("Setup AKS") {
+                container('azure-cli') {
+                    withCredentials([azureServicePrincipal('azure-credentials')]) {
+                        sh """
+                            az login --service-principal -u \$AZURE_CLIENT_ID -p \$AZURE_CLIENT_SECRET -t \$AZURE_TENANT_ID
+                            az aks get-credentials --resource-group ${props.resource_group} --name ${props.cluster_name} --overwrite-existing
+                            kubectl create namespace phonebill-dg0500 --dry-run=client -o yaml | kubectl apply -f -
+                        """
+                    }
+                }
+            }
+
+            stage('Build') {
+                container('gradle') {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew build -x test
+                    """
+                }
+            }
+
+            stage('SonarQube Analysis & Quality Gate') {
+                if (skipSonarQube) {
+                    echo "⏭️ Skipping SonarQube Analysis (SKIP_SONARQUBE=${params.SKIP_SONARQUBE})"
+                } else {
+                    container('gradle') {
+                        withSonarQubeEnv('SonarQube') {
+                            // 각 서비스별 테스트 및 SonarQube 분석
+                            services.each { service ->
+                                sh """
+                                    ./gradlew :${service}:test :${service}:jacocoTestReport :${service}:sonar \\
+                                        -Dsonar.projectKey=phonebill-${service}-dg0500 \\
+                                        -Dsonar.projectName=phonebill-${service}-dg0500 \\
+                                        -Dsonar.java.binaries=build/classes/java/main \\
+                                        -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \\
+                                        -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
+                                """
+                            }
+
+                            // Quality Gate 확인
+                            timeout(time: 10, unit: 'MINUTES') {
+                                def qg = waitForQualityGate()
+                                if (qg.status != 'OK') {
+                                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            stage('Build & Push Images') {
+                timeout(time: 30, unit: 'MINUTES') {
+                    container('podman') {
+                        withCredentials([
+                            usernamePassword(
+                                credentialsId: 'acr-credentials',
+                                usernameVariable: 'ACR_USERNAME',
+                                passwordVariable: 'ACR_PASSWORD'
+                            ),
+                            usernamePassword(
+                                credentialsId: 'dockerhub-credentials',
+                                usernameVariable: 'DOCKERHUB_USERNAME',
+                                passwordVariable: 'DOCKERHUB_PASSWORD'
+                            )
+                        ]) {
+                            // Docker Hub 로그인 (rate limit 해결)
+                            sh "podman login docker.io --username \$DOCKERHUB_USERNAME --password \$DOCKERHUB_PASSWORD"
+
+                            // ACR 로그인
+                            sh "podman login acrdigitalgarage01.azurecr.io --username \$ACR_USERNAME --password \$ACR_PASSWORD"
+
+                            services.each { service ->
+                                sh """
+                                    podman build \\
+                                        --build-arg BUILD_LIB_DIR="${service}/build/libs" \\
+                                        --build-arg ARTIFACTORY_FILE="${service}.jar" \\
+                                        -f deployment/container/Dockerfile-backend \\
+                                        -t acrdigitalgarage01.azurecr.io/phonebill/${service}:${environment}-${imageTag} .
+
+                                    podman push acrdigitalgarage01.azurecr.io/phonebill/${service}:${environment}-${imageTag}
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+
+            stage('Update Kustomize & Deploy') {
+                container('azure-cli') {
+                    sh """
+                        # Kustomize 설치 (sudo 없이 사용자 디렉토리에 설치)
+                        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+                        mkdir -p \$HOME/bin
+                        mv kustomize \$HOME/bin/
+                        export PATH=\$PATH:\$HOME/bin
+
+                        # 환경별 디렉토리로 이동
+                        cd deployment/cicd/kustomize/overlays/${environment}
+
+                        # 서비스 목록 정의 (실제 서비스명으로 교체, 공백으로 구분)
+                        services="api-gateway user-service bill-service product-service kos-mock"
+
+                        # 이미지 태그 업데이트
+                        for service in \$services; do
+                            \$HOME/bin/kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/\$service:${environment}-${imageTag}
+                        done
+
+                        # 매니페스트 적용
+                        kubectl apply -k .
+
+                        # 배포 상태 확인
+                        echo "Waiting for deployments to be ready..."
+                        for service in \$services; do
+                            kubectl -n phonebill-dg0500 wait --for=condition=available deployment/\$service --timeout=300s
+                        done
+                    """
+                }
+            }
+
+            // 파이프라인 완료 로그 (Scripted Pipeline 방식)
+            stage('Pipeline Complete') {
+                echo "🧹 Pipeline completed. Pod cleanup handled by Jenkins Kubernetes Plugin."
+
+                // 성공/실패 여부 로깅
+                if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
+                    echo "✅ Pipeline completed successfully!"
+                } else {
+                    echo "❌ Pipeline failed with result: ${currentBuild.result}"
+                }
+            }
+
+        } catch (Exception e) {
+            currentBuild.result = 'FAILURE'
+            echo "❌ Pipeline failed with exception: ${e.getMessage()}"
+            throw e
+        } finally {
+            echo "🧹 Cleaning up resources and preparing for pod termination..."
+            echo "Pod will be terminated in 3 seconds due to terminationGracePeriodSeconds: 3"
+        }
+    }
+}

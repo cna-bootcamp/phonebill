@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: phonebill-dg0500
+
+resources:
+  - ../../base
+
+patches:
+  - path: cm-common-patch.yaml
+    target:
+      kind: ConfigMap
+      name: cm-common
+  - path: deployment-api-gateway-patch.yaml
+    target:
+      kind: Deployment
+      name: api-gateway
+  - path: deployment-user-service-patch.yaml
+    target:
+      kind: Deployment
+      name: user-service
+  - path: deployment-bill-service-patch.yaml
+    target:
+      kind: Deployment
+      name: bill-service
+  - path: deployment-product-service-patch.yaml
+    target:
+      kind: Deployment
+      name: product-service
+  - path: deployment-kos-mock-patch.yaml
+    target:
+      kind: Deployment
+      name: kos-mock
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: phonebill
+  - path: secret-common-patch.yaml
+    target:
+      kind: Secret
+      name: secret-common
+  - path: secret-user-service-patch.yaml
+    target:
+      kind: Secret
+      name: secret-user-service
+  - path: secret-bill-service-patch.yaml
+    target:
+      kind: Secret
+      name: secret-bill-service
+  - path: secret-product-service-patch.yaml
+    target:
+      kind: Secret
+      name: secret-product-service
+
+images:
+  - name: acrdigitalgarage01.azurecr.io/phonebill/api-gateway
+    newTag: latest
+  - name: acrdigitalgarage01.azurecr.io/phonebill/user-service
+    newTag: latest
+  - name: acrdigitalgarage01.azurecr.io/phonebill/bill-service
+    newTag: latest
+  - name: acrdigitalgarage01.azurecr.io/phonebill/product-service
+    newTag: latest
+  - name: acrdigitalgarage01.azurecr.io/phonebill/kos-mock
+    newTag: latest

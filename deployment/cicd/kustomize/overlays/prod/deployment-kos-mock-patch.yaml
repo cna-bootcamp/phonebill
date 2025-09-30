@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kos-mock
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: kos-mock
+        resources:
+          requests:
+            cpu: "1024m"
+            memory: "1024Mi"
+          limits:
+            cpu: "4096m"
+            memory: "4096Mi"
