@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: phonebill-api.20.214.196.128.nip.io
+  - host: phonebill-dg0500-api.20.214.196.128.nip.io
     http:
       paths:
       - path: /api/v1/auth
