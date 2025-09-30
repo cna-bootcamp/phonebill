@@ -86,6 +86,7 @@ podTemplate(
 
         try {
             stage("Get Source") {
+
                 checkout scm
                 props = readProperties file: "deployment/cicd/config/deploy_env_vars_${environment}"
             }
@@ -105,27 +106,37 @@ podTemplate(
                     echo "⏭️ Skipping SonarQube Analysis (SKIP_SONARQUBE=${params.SKIP_SONARQUBE})"
                 } else {
                     container('gradle') {
-                        withSonarQubeEnv('SonarQube') {
-                            // 각 서비스별 테스트 및 SonarQube 분석
-                            services.each { service ->
+                        // 각 서비스별로 개별적으로 SonarQube 분석 및 Quality Gate 확인
+                        services.each { service ->
+                            withSonarQubeEnv('SonarQube') {
+                                echo "🔍 Starting SonarQube analysis for ${service}..."
+
+                                // 서비스별 테스트 및 SonarQube 분석
                                 sh """
                                     ./gradlew :${service}:test :${service}:jacocoTestReport :${service}:sonar \\
                                         -Dsonar.projectKey=phonebill-${service}-dg0500 \\
                                         -Dsonar.projectName=phonebill-${service}-dg0500 \\
-                                        -Dsonar.java.binaries=build/classes/java/main \\
-                                        -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \\
+                                        -Dsonar.java.binaries=${service}/build/classes/java/main \\
+                                        -Dsonar.coverage.jacoco.xmlReportPaths=${service}/build/reports/jacoco/test/jacocoTestReport.xml \\
                                         -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
                                 """
+
+                                echo "✅ SonarQube analysis completed for ${service}"
                             }
 
-                            // Quality Gate 확인
-                            timeout(time: 10, unit: 'MINUTES') {
+                            // 각 서비스별 Quality Gate 확인
+                            timeout(time: 5, unit: 'MINUTES') {
+                                echo "⏳ Waiting for Quality Gate result for ${service}..."
                                 def qg = waitForQualityGate()
                                 if (qg.status != 'OK') {
-                                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                                    error "❌ Quality Gate failed for ${service}: ${qg.status}"
+                                } else {
+                                    echo "✅ Quality Gate passed for ${service}"
                                 }
                             }
                         }
+
+                        echo "🎉 All services passed SonarQube Quality Gates!"
                     }
                 }
             }
