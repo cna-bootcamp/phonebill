@@ -6,10 +6,10 @@ metadata:
 
 resources:
   # Common resources
-  - common/ingress.yaml
   - common/cm-common.yaml
   - common/secret-common.yaml
   - common/secret-imagepull.yaml
+  - common/ingress.yaml
 
   # API Gateway
   - api-gateway/deployment.yaml

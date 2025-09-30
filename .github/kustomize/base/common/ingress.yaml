@@ -2,14 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: phonebill
-  
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-  - host: phonebill-api.20.214.196.128.nip.io
+  - host: phonebill-dg0500-api.20.214.196.128.nip.io
     http:
       paths:
       - path: /api/v1/auth
@@ -47,3 +46,4 @@ spec:
             name: kos-mock
             port:
               number: 80
+

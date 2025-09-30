@@ -4,11 +4,16 @@ metadata:
   name: phonebill
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - phonebill-staging.digitalgarage.com
+    secretName: phonebill-staging-tls
   rules:
-  - host: phonebill-api.20.214.196.128.nip.io
+  - host: phonebill-staging.digitalgarage.com
     http:
       paths:
       - path: /api/v1/auth

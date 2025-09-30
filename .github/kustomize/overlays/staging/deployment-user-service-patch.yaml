@@ -3,15 +3,15 @@ kind: Deployment
 metadata:
   name: user-service
 spec:
-  replicas: 1
+  replicas: 2
   template:
     spec:
       containers:
       - name: user-service
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "256m"
+            memory: "512Mi"
+            cpu: "512m"
           limits:
-            memory: "1024Mi"
-            cpu: "1024m"
+            memory: "2048Mi"
+            cpu: "2048m"

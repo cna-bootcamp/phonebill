@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: cm-common
 data:
-  CORS_ALLOWED_ORIGINS: "http://localhost:8081,http://localhost:8082,http://localhost:8083,http://localhost:8084,http://phonebill.20.214.196.128.nip.io"
-  JWT_ACCESS_TOKEN_VALIDITY: "18000000"
-  JWT_REFRESH_TOKEN_VALIDITY: "86400000"
+  CORS_ALLOWED_ORIGINS: "https://phonebill.digitalgarage.com,https://phonebill-prod.digitalgarage.com"
+  JWT_ACCESS_TOKEN_VALIDITY: "3600000"
+  JWT_REFRESH_TOKEN_VALIDITY: "43200000"
   REDIS_PORT: "6379"
-  SPRING_PROFILES_ACTIVE: "dev"
-  DDL_AUTO: "update"
+  SPRING_PROFILES_ACTIVE: "prod"
+  DDL_AUTO: "validate"

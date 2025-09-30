@@ -25,8 +25,8 @@ else
 fi
 
 # Create namespace
-echo "📝 Creating namespace phonebill-${ENVIRONMENT}..."
-kubectl create namespace phonebill-${ENVIRONMENT} --dry-run=client -o yaml | kubectl apply -f -
+echo "📝 Creating namespace phonebill-dg0500..."
+kubectl create namespace phonebill-dg0500 --dry-run=client -o yaml | kubectl apply -f -
 
 # 환경별 이미지 태그 업데이트 (.github/kustomize 사용)
 cd .github/kustomize/overlays/${ENVIRONMENT}
@@ -47,18 +47,18 @@ kubectl apply -k .
 echo "⏳ Waiting for deployments to be ready..."
 # 서비스별 배포 상태 확인
 for service in "${services[@]}"; do
-  kubectl rollout status deployment/$service -n phonebill-${ENVIRONMENT} --timeout=300s
+  kubectl rollout status deployment/$service -n phonebill-dg0500 --timeout=300s
 done
 
 echo "🔍 Health check..."
 # API Gateway Health Check (첫 번째 서비스가 API Gateway라고 가정)
 GATEWAY_SERVICE=${services[0]}
-GATEWAY_POD=$(kubectl get pod -n phonebill-${ENVIRONMENT} -l app.kubernetes.io/name=$GATEWAY_SERVICE -o jsonpath='{.items[0].metadata.name}')
-kubectl -n phonebill-${ENVIRONMENT} exec $GATEWAY_POD -- curl -f http://localhost:8080/actuator/health || echo "Health check failed, but deployment completed"
+GATEWAY_POD=$(kubectl get pod -n phonebill-dg0500 -l app.kubernetes.io/name=$GATEWAY_SERVICE -o jsonpath='{.items[0].metadata.name}')
+kubectl -n phonebill-dg0500 exec $GATEWAY_POD -- curl -f http://localhost:8080/actuator/health || echo "Health check failed, but deployment completed"
 
 echo "📋 Service Information:"
-kubectl get pods -n phonebill-${ENVIRONMENT}
-kubectl get services -n phonebill-${ENVIRONMENT}
-kubectl get ingress -n phonebill-${ENVIRONMENT}
+kubectl get pods -n phonebill-dg0500
+kubectl get services -n phonebill-dg0500
+kubectl get ingress -n phonebill-dg0500
 
 echo "✅ GitHub Actions deployment completed successfully!"

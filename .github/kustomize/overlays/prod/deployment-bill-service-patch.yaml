@@ -3,15 +3,15 @@ kind: Deployment
 metadata:
   name: bill-service
 spec:
-  replicas: 1
+  replicas: 3
   template:
     spec:
       containers:
       - name: bill-service
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "256m"
-          limits:
             memory: "1024Mi"
             cpu: "1024m"
+          limits:
+            memory: "4096Mi"
+            cpu: "4096m"

@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: phonebill-prod
+namespace: phonebill-dg0500
 
 resources:
   - ../../base
@@ -11,14 +11,6 @@ patches:
     target:
       kind: ConfigMap
       name: cm-common
-  - path: secret-common-patch.yaml
-    target:
-      kind: Secret
-      name: secret-common
-  - path: ingress-patch.yaml
-    target:
-      kind: Ingress
-      name: phonebill
   - path: deployment-api-gateway-patch.yaml
     target:
       kind: Deployment
@@ -39,6 +31,14 @@ patches:
     target:
       kind: Deployment
       name: kos-mock
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: phonebill
+  - path: secret-common-patch.yaml
+    target:
+      kind: Secret
+      name: secret-common
   - path: secret-user-service-patch.yaml
     target:
       kind: Secret
