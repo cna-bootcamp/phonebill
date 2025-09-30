@@ -46,4 +46,4 @@ spec:
             name: kos-mock
             port:
               number: 80
-              
+
