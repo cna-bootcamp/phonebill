@@ -7,50 +7,61 @@ resources:
   - ../../base
 
 patches:
+  # Common patches
   - path: cm-common-patch.yaml
     target:
       kind: ConfigMap
       name: cm-common
-  - path: deployment-api-gateway-patch.yaml
-    target:
-      kind: Deployment
-      name: api-gateway
-  - path: deployment-user-service-patch.yaml
-    target:
-      kind: Deployment
-      name: user-service
-  - path: deployment-bill-service-patch.yaml
-    target:
-      kind: Deployment
-      name: bill-service
-  - path: deployment-product-service-patch.yaml
-    target:
-      kind: Deployment
-      name: product-service
-  - path: deployment-kos-mock-patch.yaml
-    target:
-      kind: Deployment
-      name: kos-mock
-  - path: ingress-patch.yaml
-    target:
-      kind: Ingress
-      name: phonebill
   - path: secret-common-patch.yaml
     target:
       kind: Secret
       name: secret-common
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: phonebill
+
+  # API Gateway patches
+  - path: deployment-api-gateway-patch.yaml
+    target:
+      kind: Deployment
+      name: api-gateway
+
+  # User Service patches
+  - path: deployment-user-service-patch.yaml
+    target:
+      kind: Deployment
+      name: user-service
   - path: secret-user-service-patch.yaml
     target:
       kind: Secret
       name: secret-user-service
+
+  # Bill Service patches
+  - path: deployment-bill-service-patch.yaml
+    target:
+      kind: Deployment
+      name: bill-service
   - path: secret-bill-service-patch.yaml
     target:
       kind: Secret
       name: secret-bill-service
+
+  # Product Service patches
+  - path: deployment-product-service-patch.yaml
+    target:
+      kind: Deployment
+      name: product-service
   - path: secret-product-service-patch.yaml
     target:
       kind: Secret
       name: secret-product-service
+
+  # KOS Mock patches
+  - path: deployment-kos-mock-patch.yaml
+    target:
+      kind: Deployment
+      name: kos-mock
 
 images:
   - name: acrdigitalgarage01.azurecr.io/phonebill/api-gateway

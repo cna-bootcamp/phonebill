@@ -34,7 +34,7 @@ resources:
   - product-service/cm-product-service.yaml
   - product-service/secret-product-service.yaml
 
-  # KOS Mock Service
+  # KOS Mock
   - kos-mock/deployment.yaml
   - kos-mock/service.yaml
   - kos-mock/cm-kos-mock.yaml

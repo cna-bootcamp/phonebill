@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: cm-common
 data:
-  CORS_ALLOWED_ORIGINS: "https://phonebill.staging.digitalgarage.com,https://phonebill-staging.digitalgarage.com"
-  JWT_ACCESS_TOKEN_VALIDITY: "18000000"
+  CORS_ALLOWED_ORIGINS: "https://phonebill-staging.example.com"
+  JWT_ACCESS_TOKEN_VALIDITY: "3600000"
   JWT_REFRESH_TOKEN_VALIDITY: "86400000"
   REDIS_PORT: "6379"
   SPRING_PROFILES_ACTIVE: "staging"
