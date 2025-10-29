@@ -5,7 +5,9 @@
       "Bash(chmod:*)",
       "Bash(sed:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nArgoCD 기반 CI/CD 파이프라인 추가\n\n- GitHub Actions 워크플로우 파일 추가\n- 빌드, 테스트, 이미지 생성 자동화\n- ArgoCD 동기화 트리거 구성\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
