@@ -21,9 +21,12 @@ public class AuthUserEntity extends BaseTimeEntity {
     @Column(name = "user_id", length = 50)
     private String userId;
     
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
-    
+
     @Column(name = "password_salt", nullable = false, length = 100)
     private String passwordSalt;
     
@@ -35,7 +38,15 @@ public class AuthUserEntity extends BaseTimeEntity {
     
     @Column(name = "user_name", length = 100)
     private String userName;
-    
+
+    @Column(name = "enabled", nullable = false)
+    @Builder.Default
+    private Boolean enabled = true;
+
+    @Column(name = "locked", nullable = false)
+    @Builder.Default
+    private Boolean locked = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "account_status", length = 20)
     @Builder.Default

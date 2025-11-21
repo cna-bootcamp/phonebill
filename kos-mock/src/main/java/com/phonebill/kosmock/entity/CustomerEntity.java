@@ -41,12 +41,14 @@ public class CustomerEntity {
     private LocalDateTime contractDate;
     
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-    
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
     
     // 상품 엔티티와의 관계 설정 (조회 성능을 위해)
     @ManyToOne(fetch = FetchType.LAZY)

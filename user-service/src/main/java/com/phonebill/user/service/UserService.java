@@ -118,10 +118,12 @@ public class UserService {
             AuthUserPermissionEntity userPermission = AuthUserPermissionEntity.builder()
                     .userId(userId)
                     .permissionId(permission.getPermissionId())
+                    .permissionName(permission.getPermissionCode())
+                    .description(permission.getPermissionDescription())
                     .granted(true)
                     .grantedBy(grantedBy)
                     .build();
-            
+
             authUserPermissionRepository.save(userPermission);
         }
         
@@ -261,8 +263,11 @@ public class UserService {
                 .customerId(request.getCustomerId())
                 .lineNumber(request.getLineNumber())
                 .userName(request.getUserName())
+                .password(hashedPassword)
                 .passwordHash(hashedPassword)
                 .passwordSalt(salt)
+                .enabled(existingUser.getEnabled())
+                .locked(existingUser.getLocked())
                 .accountStatus(existingUser.getAccountStatus())
                 .failedLoginCount(existingUser.getFailedLoginCount())
                 .lastFailedLoginAt(existingUser.getLastFailedLoginAt())
@@ -331,8 +336,11 @@ public class UserService {
                 .customerId(request.getCustomerId())
                 .lineNumber(request.getLineNumber())
                 .userName(request.getUserName())
+                .password(hashedPassword)
                 .passwordHash(hashedPassword)
                 .passwordSalt(salt)
+                .enabled(true)
+                .locked(false)
                 .accountStatus(AuthUserEntity.AccountStatus.ACTIVE)
                 .failedLoginCount(0)
                 .build();

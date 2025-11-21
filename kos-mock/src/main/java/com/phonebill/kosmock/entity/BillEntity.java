@@ -62,9 +62,10 @@ public class BillEntity {
     private String dueDate;
     
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-    
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     // 고객 정보와의 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "line_number", insertable = false, updatable = false)

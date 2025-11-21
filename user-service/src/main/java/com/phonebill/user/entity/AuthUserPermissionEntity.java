@@ -19,17 +19,23 @@ public class AuthUserPermissionEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_permission_id")
     private Long userPermissionId;
-    
+
     @Column(name = "user_id", nullable = false, length = 50)
     private String userId;
-    
-    @Column(name = "permission_id", nullable = false)
+
+    @Column(name = "permission_id")
     private Long permissionId;
-    
+
+    @Column(name = "permission_name", nullable = false, length = 50)
+    private String permissionName;
+
+    @Column(name = "description", length = 200)
+    private String description;
+
     @Column(name = "granted")
     @Builder.Default
     private Boolean granted = true;
-    
+
     @Column(name = "granted_by", length = 50)
     private String grantedBy;
     
