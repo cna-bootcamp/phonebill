@@ -5,7 +5,7 @@
         <map>
           <entry key="CORS_ALLOWED_ORIGINS" value="http://localhost:3000" />
           <entry key="DB_CONNECTION_TIMEOUT" value="30000" />
-          <entry key="DB_HOST" value="20.249.175.46" />
+          <entry key="DB_HOST" value="localhost" />
           <entry key="DB_IDLE_TIMEOUT" value="600000" />
           <entry key="DB_KIND" value="postgresql" />
           <entry key="DB_LEAK_DETECTION" value="60000" />
@@ -13,8 +13,8 @@
           <entry key="DB_MAX_POOL" value="20" />
           <entry key="DB_MIN_IDLE" value="5" />
           <entry key="DB_NAME" value="bill_inquiry_db" />
-          <entry key="DB_PASSWORD" value="BillUser2025!" />
-          <entry key="DB_PORT" value="5432" />
+          <entry key="DB_PASSWORD" value="BillUser2025@" />
+          <entry key="DB_PORT" value="25432" />
           <entry key="DB_USERNAME" value="bill_inquiry_user" />
           <entry key="JWT_ACCESS_TOKEN_VALIDITY" value="18000000" />
           <entry key="JWT_REFRESH_TOKEN_VALIDITY" value="86400000" />
@@ -22,12 +22,12 @@
           <entry key="KOS_BASE_URL" value="http://localhost:8084" />
           <entry key="LOG_FILE_NAME" value="logs/bill-service.log" />
           <entry key="REDIS_DATABASE" value="1" />
-          <entry key="REDIS_HOST" value="20.249.193.103" />
+          <entry key="REDIS_HOST" value="localhost" />
           <entry key="REDIS_MAX_ACTIVE" value="8" />
           <entry key="REDIS_MAX_IDLE" value="8" />
           <entry key="REDIS_MAX_WAIT" value="-1" />
           <entry key="REDIS_MIN_IDLE" value="0" />
-          <entry key="REDIS_PASSWORD" value="Redis2025Dev!" />
+          <entry key="REDIS_PASSWORD" value="Redis2025Dev@" />
           <entry key="REDIS_PORT" value="6379" />
           <entry key="REDIS_TIMEOUT" value="2000" />
           <entry key="SERVER_PORT" value="8082" />

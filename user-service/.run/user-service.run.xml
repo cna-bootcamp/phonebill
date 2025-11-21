@@ -4,11 +4,11 @@
       <option name="env">
         <map>
           <entry key="CORS_ALLOWED_ORIGINS" value="http://localhost:3000" />
-          <entry key="DB_HOST" value="20.249.70.6" />
+          <entry key="DB_HOST" value="localhost" />
           <entry key="DB_KIND" value="postgresql" />
           <entry key="DB_NAME" value="phonebill_auth" />
-          <entry key="DB_PASSWORD" value="AuthUser2025!" />
-          <entry key="DB_PORT" value="5432" />
+          <entry key="DB_PASSWORD" value="AuthUser2025@" />
+          <entry key="DB_PORT" value="15432" />
           <entry key="DB_USERNAME" value="auth_user" />
           <entry key="DDL_AUTO" value="update" />
           <entry key="JWT_ACCESS_TOKEN_VALIDITY" value="18000000" />

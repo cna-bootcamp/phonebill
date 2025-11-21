@@ -4,11 +4,11 @@
       <option name="env">
         <map>
           <entry key="CORS_ALLOWED_ORIGINS" value="http://localhost:3000" />
-          <entry key="DB_HOST" value="20.249.107.185" />
+          <entry key="DB_HOST" value="localhost" />
           <entry key="DB_KIND" value="postgresql" />
           <entry key="DB_NAME" value="product_change_db" />
-          <entry key="DB_PASSWORD" value="ProductUser2025!" />
-          <entry key="DB_PORT" value="5432" />
+          <entry key="DB_PASSWORD" value="ProductUser2025@" />
+          <entry key="DB_PORT" value="35432" />
           <entry key="DB_USERNAME" value="product_change_user" />
           <entry key="DDL_AUTO" value="update" />
           <entry key="JWT_ACCESS_TOKEN_VALIDITY" value="18000000" />
@@ -19,8 +19,8 @@
           <entry key="KOS_CLIENT_ID" value="product-service-dev" />
           <entry key="KOS_MOCK_ENABLED" value="true" />
           <entry key="REDIS_DATABASE" value="2" />
-          <entry key="REDIS_HOST" value="20.249.193.103" />
-          <entry key="REDIS_PASSWORD" value="Redis2025Dev!" />
+          <entry key="REDIS_HOST" value="localhost" />
+          <entry key="REDIS_PASSWORD" value="Redis2025Dev@" />
           <entry key="REDIS_PORT" value="6379" />
           <entry key="SERVER_PORT" value="8083" />
           <entry key="SPRING_PROFILES_ACTIVE" value="dev" />
