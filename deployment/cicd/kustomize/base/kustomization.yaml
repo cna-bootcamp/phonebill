@@ -38,10 +38,6 @@ resources:
   - kos-mock/service.yaml
   - kos-mock/cm-kos-mock.yaml
 
-commonLabels:
-  app: phonebill
-  version: v1
-
 images:
   - name: docker.io/hiondal/api-gateway
     newTag: latest
