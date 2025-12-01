@@ -67,7 +67,7 @@ podTemplate(
         def props
         def imageTag = getImageTag()
         def environment = params.ENVIRONMENT ?: 'dev'
-        def skipSonarQube = (params.SKIP_SONARQUBE?.toLowerCase() == 'true')
+        def skipSonarQube = params.SKIP_SONARQUBE ?: 'true'
         def services = ['api-gateway', 'user-service', 'bill-service', 'product-service', 'kos-mock']
 
         try {
