@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  namespace: phonebill
+  labels:
+    app: api-gateway
+    app.kubernetes.io/part-of: phonebill
+data:
+  SERVER_PORT: "8080"
+  USER_SERVICE_URL: "http://user-service:8081"
+  BILL_SERVICE_URL: "http://bill-service:8082"
+  PRODUCT_SERVICE_URL: "http://product-service:8083"
+  KOS_MOCK_URL: "http://kos-mock:8084"

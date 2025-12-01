@@ -5,13 +5,14 @@ ARG ARTIFACTORY_FILE
 COPY ${BUILD_LIB_DIR}/${ARTIFACTORY_FILE} app.jar
 
 # Run stage
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 ENV USERNAME=k8s
 ENV ARTIFACTORY_HOME=/home/${USERNAME}
 ENV JAVA_OPTS=""
 
 # Add a non-root user
-RUN adduser --system --group ${USERNAME} && \
+RUN addgroup -S ${USERNAME} && \
+    adduser -S -G ${USERNAME} ${USERNAME} && \
     mkdir -p ${ARTIFACTORY_HOME} && \
     chown ${USERNAME}:${USERNAME} ${ARTIFACTORY_HOME}
 

@@ -1,6 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cm-kos-mock
+  name: kos-mock-config
+  
+  labels:
+    app: kos-mock
+    app.kubernetes.io/part-of: phonebill
 data:
   SERVER_PORT: "8084"

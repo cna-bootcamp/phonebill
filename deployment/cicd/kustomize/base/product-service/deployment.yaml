@@ -2,6 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: product-service
+  
+  labels:
+    app: product-service
+    app.kubernetes.io/part-of: phonebill
 spec:
   replicas: 1
   selector:
@@ -12,48 +16,42 @@ spec:
       labels:
         app: product-service
     spec:
-      imagePullSecrets:
-      - name: phonebill
       containers:
       - name: product-service
-        image: acrdigitalgarage01.azurecr.io/phonebill/product-service:latest
+        image: docker.io/hiondal/product-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8083
+          name: http
         envFrom:
         - configMapRef:
-            name: cm-common
+            name: phonebill-common-config
         - configMapRef:
-            name: cm-product-service
+            name: product-service-config
         - secretRef:
-            name: secret-common
+            name: phonebill-common-secret
         - secretRef:
-            name: secret-product-service
+            name: product-service-db-secret
         resources:
           requests:
-            cpu: 256m
-            memory: 256Mi
+            cpu: "256m"
+            memory: "256Mi"
           limits:
-            cpu: 1024m
-            memory: 1024Mi
-        startupProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8083
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 6
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8083
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 3
+            cpu: "1024m"
+            memory: "1024Mi"
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
             port: 8083
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8083
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3

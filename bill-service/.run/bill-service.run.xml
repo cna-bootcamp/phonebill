@@ -12,10 +12,10 @@
           <entry key="DB_MAX_LIFETIME" value="1800000" />
           <entry key="DB_MAX_POOL" value="20" />
           <entry key="DB_MIN_IDLE" value="5" />
-          <entry key="DB_NAME" value="bill_inquiry_db" />
-          <entry key="DB_PASSWORD" value="BillUser2025@" />
+          <entry key="DB_NAME" value="inquirydb" />
+          <entry key="DB_PASSWORD" value="P@ssw0rd$" />
           <entry key="DB_PORT" value="25432" />
-          <entry key="DB_USERNAME" value="bill_inquiry_user" />
+          <entry key="DB_USERNAME" value="unicorn" />
           <entry key="JWT_ACCESS_TOKEN_VALIDITY" value="18000000" />
           <entry key="JWT_REFRESH_TOKEN_VALIDITY" value="86400000" />
           <entry key="JWT_SECRET" value="nwe5Yo9qaJ6FBD/Thl2/j6/SFAfNwUorAY1ZcWO2KI7uA4bmVLOCPxE9hYuUpRCOkgV2UF2DdHXtqHi3+BU/ecbz2zpHyf/720h48UbA3XOMYOX1sdM+dQ==" />
@@ -27,8 +27,8 @@
           <entry key="REDIS_MAX_IDLE" value="8" />
           <entry key="REDIS_MAX_WAIT" value="-1" />
           <entry key="REDIS_MIN_IDLE" value="0" />
-          <entry key="REDIS_PASSWORD" value="Redis2025Dev@" />
-          <entry key="REDIS_PORT" value="6379" />
+          <entry key="REDIS_PASSWORD" value="P@ssw0rd$" />
+          <entry key="REDIS_PORT" value="16379" />
           <entry key="REDIS_TIMEOUT" value="2000" />
           <entry key="SERVER_PORT" value="8082" />
           <entry key="SPRING_PROFILES_ACTIVE" value="dev" />

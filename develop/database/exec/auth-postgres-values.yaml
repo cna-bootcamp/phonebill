@@ -7,7 +7,7 @@ global:
       database: "phonebill_auth"
       username: "auth_user"
       password: "AuthUser2025@"
-  storageClass: "managed"
+  storageClass: "standard"
 
 # Primary 설정 (개발환경 단독 구성)
 architecture: standalone
@@ -25,7 +25,7 @@ primary:
   # 스토리지 설정
   persistence:
     enabled: true
-    storageClass: "managed"
+    storageClass: "standard"
     size: 20Gi
 
   # PostgreSQL 성능 설정 (개발환경 최적화)

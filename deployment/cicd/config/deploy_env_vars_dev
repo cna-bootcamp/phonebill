@@ -1,3 +1,4 @@
-# dev Environment Configuration
-resource_group=rg-digitalgarage-01
-cluster_name=aks-digitalgarage-01
+# Dev Environment Configuration
+# Minikube Remote 환경 설정
+k8s_context=minikube-remote
+namespace=phonebill

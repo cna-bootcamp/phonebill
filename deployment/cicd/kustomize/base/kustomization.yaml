@@ -8,7 +8,6 @@ resources:
   # Common resources
   - common/cm-common.yaml
   - common/secret-common.yaml
-  - common/secret-imagepull.yaml
   - common/ingress.yaml
 
   # api-gateway
@@ -44,13 +43,13 @@ commonLabels:
   version: v1
 
 images:
-  - name: acrdigitalgarage01.azurecr.io/phonebill/api-gateway
+  - name: docker.io/hiondal/api-gateway
     newTag: latest
-  - name: acrdigitalgarage01.azurecr.io/phonebill/user-service
+  - name: docker.io/hiondal/user-service
     newTag: latest
-  - name: acrdigitalgarage01.azurecr.io/phonebill/bill-service
+  - name: docker.io/hiondal/bill-service
     newTag: latest
-  - name: acrdigitalgarage01.azurecr.io/phonebill/product-service
+  - name: docker.io/hiondal/product-service
     newTag: latest
-  - name: acrdigitalgarage01.azurecr.io/phonebill/kos-mock
+  - name: docker.io/hiondal/kos-mock
     newTag: latest

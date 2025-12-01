@@ -2,10 +2,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: user-service
+  
+  labels:
+    app: user-service
+    app.kubernetes.io/part-of: phonebill
 spec:
+  type: ClusterIP
   selector:
     app: user-service
   ports:
-  - port: 80
+  - name: http
+    port: 8081
     targetPort: 8081
-  type: ClusterIP
+    protocol: TCP

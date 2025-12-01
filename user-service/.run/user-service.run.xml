@@ -6,18 +6,18 @@
           <entry key="CORS_ALLOWED_ORIGINS" value="http://localhost:3000" />
           <entry key="DB_HOST" value="localhost" />
           <entry key="DB_KIND" value="postgresql" />
-          <entry key="DB_NAME" value="phonebill_auth" />
-          <entry key="DB_PASSWORD" value="AuthUser2025@" />
+          <entry key="DB_NAME" value="authdb" />
+          <entry key="DB_PASSWORD" value="P@ssw0rd$" />
           <entry key="DB_PORT" value="15432" />
-          <entry key="DB_USERNAME" value="auth_user" />
+          <entry key="DB_USERNAME" value="unicorn" />
           <entry key="DDL_AUTO" value="update" />
           <entry key="JWT_ACCESS_TOKEN_VALIDITY" value="18000000" />
           <entry key="JWT_REFRESH_TOKEN_VALIDITY" value="86400000" />
           <entry key="JWT_SECRET" value="nwe5Yo9qaJ6FBD/Thl2/j6/SFAfNwUorAY1ZcWO2KI7uA4bmVLOCPxE9hYuUpRCOkgV2UF2DdHXtqHi3+BU/ecbz2zpHyf/720h48UbA3XOMYOX1sdM+dQ==" />
           <entry key="REDIS_DATABASE" value="0" />
           <entry key="REDIS_HOST" value="localhost" />
-          <entry key="REDIS_PASSWORD" value="Redis2025Dev@" />
-          <entry key="REDIS_PORT" value="6379" />
+          <entry key="REDIS_PASSWORD" value="P@ssw0rd$" />
+          <entry key="REDIS_PORT" value="16379" />
           <entry key="SERVER_PORT" value="8081" />
           <entry key="SHOW_SQL" value="true" />
           <entry key="SPRING_PROFILES_ACTIVE" value="dev" />

@@ -2,6 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-service
+  namespace: phonebill
+  labels:
+    app: user-service
+    app.kubernetes.io/part-of: phonebill
 spec:
   replicas: 1
   selector:
@@ -12,48 +16,42 @@ spec:
       labels:
         app: user-service
     spec:
-      imagePullSecrets:
-      - name: phonebill
       containers:
       - name: user-service
-        image: acrdigitalgarage01.azurecr.io/phonebill/user-service:latest
+        image: docker.io/hiondal/user-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
+          name: http
         envFrom:
         - configMapRef:
-            name: cm-common
+            name: phonebill-common-config
         - configMapRef:
-            name: cm-user-service
+            name: user-service-config
         - secretRef:
-            name: secret-common
+            name: phonebill-common-secret
         - secretRef:
-            name: secret-user-service
+            name: user-service-db-secret
         resources:
           requests:
-            cpu: 256m
-            memory: 256Mi
+            cpu: "256m"
+            memory: "256Mi"
           limits:
-            cpu: 1024m
-            memory: 1024Mi
-        startupProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8081
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 6
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8081
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 3
+            cpu: "1024m"
+            memory: "1024Mi"
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
             port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8081
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3

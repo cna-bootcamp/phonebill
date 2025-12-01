@@ -2,6 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway
+  
+  labels:
+    app: api-gateway
+    app.kubernetes.io/part-of: phonebill
 spec:
   replicas: 1
   selector:
@@ -12,46 +16,40 @@ spec:
       labels:
         app: api-gateway
     spec:
-      imagePullSecrets:
-      - name: phonebill
       containers:
       - name: api-gateway
-        image: acrdigitalgarage01.azurecr.io/phonebill/api-gateway:latest
+        image: docker.io/hiondal/api-gateway:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+          name: http
         envFrom:
         - configMapRef:
-            name: cm-common
+            name: phonebill-common-config
         - configMapRef:
-            name: cm-api-gateway
+            name: api-gateway-config
         - secretRef:
-            name: secret-common
+            name: phonebill-common-secret
         resources:
           requests:
-            cpu: 256m
-            memory: 256Mi
+            cpu: "256m"
+            memory: "256Mi"
           limits:
-            cpu: 1024m
-            memory: 1024Mi
-        startupProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 6
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 3
+            cpu: "1024m"
+            memory: "1024Mi"
         livenessProbe:
           httpGet:
-            path: /health
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3

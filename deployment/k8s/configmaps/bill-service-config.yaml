@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bill-service-config
+  namespace: phonebill
+  labels:
+    app: bill-service
+    app.kubernetes.io/part-of: phonebill
+data:
+  SERVER_PORT: "8082"
+  DB_HOST: "inquiry-postgresql"
+  DB_PORT: "5432"
+  DB_NAME: "inquirydb"
+  REDIS_DATABASE: "1"
+  KOS_BASE_URL: "http://kos-mock:8084"
+  DDL_AUTO: "update"

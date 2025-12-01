@@ -1,7 +1,7 @@
 # values.yaml - Redis Cache 개발환경 설정
 # Redis 기본 설정
 global:
-  storageClass: "managed"
+  storageClass: "standard"
 
 # 아키텍처 (개발환경 단일 구성)
 architecture: standalone

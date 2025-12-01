@@ -4,40 +4,35 @@ set -e
 ENVIRONMENT=${1:-dev}
 IMAGE_TAG=${2:-latest}
 
-echo "🚀 Starting deployment for environment: $ENVIRONMENT with image tag: $IMAGE_TAG"
+echo "🚀 Deploying to ${ENVIRONMENT} environment with tag ${IMAGE_TAG}..."
+
+# 환경별 설정 파일 로드
+source "$(dirname "$0")/../config/deploy_env_vars_${ENVIRONMENT}"
 
 # 환경별 이미지 태그 업데이트
-cd deployment/cicd/kustomize/overlays/${ENVIRONMENT}
+cd "$(dirname "$0")/../kustomize/overlays/${ENVIRONMENT}"
 
-# 서비스 목록 (공백으로 구분)
+# 서비스 목록
 services="api-gateway user-service bill-service product-service kos-mock"
-
-echo "📦 Updating image tags for services: $services"
 
 # 각 서비스 이미지 태그 업데이트
 for service in $services; do
-    echo "  - Updating $service to ${ENVIRONMENT}-${IMAGE_TAG}"
-    kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/$service:${ENVIRONMENT}-${IMAGE_TAG}
+    echo "📦 Updating image tag for ${service}..."
+    kustomize edit set image docker.io/hiondal/$service:${ENVIRONMENT}-${IMAGE_TAG}
 done
 
-echo "🔧 Applying Kubernetes manifests..."
 # 배포 실행
+echo "📋 Applying Kustomize manifests..."
 kubectl apply -k .
 
-echo "⏳ Waiting for deployments to be ready..."
 # 배포 상태 확인
+echo "⏳ Waiting for deployments to be ready..."
 for service in $services; do
-    echo "  - Checking rollout status for $service"
-    kubectl rollout status deployment/$service -n phonebill-dg0500 --timeout=300s
+    echo "  Checking ${service}..."
+    kubectl rollout status deployment/$service -n ${namespace} --timeout=300s || echo "  ⚠️ Timeout waiting for ${service}"
 done
 
 echo "✅ Deployment completed successfully!"
 echo ""
-echo "📊 Current deployment status:"
-kubectl get pods -n phonebill-dg0500 -o wide
-echo ""
-echo "🌐 Service endpoints:"
-kubectl get services -n phonebill-dg0500
-echo ""
-echo "🔗 Ingress information:"
-kubectl get ingress -n phonebill-dg0500
+echo "📊 Current status:"
+kubectl get pods -n ${namespace}

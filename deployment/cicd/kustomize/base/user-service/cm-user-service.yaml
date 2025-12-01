@@ -1,11 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cm-user-service
+  name: user-service-config
+  
+  labels:
+    app: user-service
+    app.kubernetes.io/part-of: phonebill
 data:
   SERVER_PORT: "8081"
-  DB_KIND: "postgresql"
+  DB_HOST: "auth-postgresql"
   DB_PORT: "5432"
-  DDL_AUTO: "update"
+  DB_NAME: "authdb"
   REDIS_DATABASE: "0"
-  SHOW_SQL: "true"
+  DDL_AUTO: "update"

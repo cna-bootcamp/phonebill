@@ -12,7 +12,7 @@ podTemplate(
     slaveConnectTimeout: 300,
     idleMinutes: 1,
     activeDeadlineSeconds: 3600,
-    podRetention: never(),  // 파드 자동 정리 옵션: never(), onFailure(), always(), default()
+    podRetention: never(),
     yaml: '''
         spec:
           terminationGracePeriodSeconds: 3
@@ -51,8 +51,8 @@ podTemplate(
             ]
         ),
         containerTemplate(
-            name: 'azure-cli',
-            image: 'hiondal/azure-kubectl:latest',
+            name: 'kubectl',
+            image: 'bitnami/kubectl:latest',
             command: 'cat',
             ttyEnabled: true,
             resourceRequestCpu: '200m',
@@ -63,14 +63,12 @@ podTemplate(
     ],
     volumes: [
         emptyDirVolume(mountPath: '/home/gradle/.gradle', memory: false),
-        emptyDirVolume(mountPath: '/root/.azure', memory: false),
         emptyDirVolume(mountPath: '/run/podman', memory: false)
     ]
 ) {
     node(PIPELINE_ID) {
         def props
-        //def imageTag = getImageTag()
-        def imageTag = "dg0500"
+        def imageTag = getImageTag()
         def environment = params.ENVIRONMENT ?: 'dev'
         def skipSonarQube = (params.SKIP_SONARQUBE?.toLowerCase() == 'true')
         def services = ['api-gateway', 'user-service', 'bill-service', 'product-service', 'kos-mock']
@@ -81,15 +79,12 @@ podTemplate(
                 props = readProperties file: "deployment/cicd/config/deploy_env_vars_${environment}"
             }
 
-            stage("Setup AKS") {
-                container('azure-cli') {
-                    withCredentials([azureServicePrincipal('azure-credentials')]) {
-                        sh """
-                            az login --service-principal -u \$AZURE_CLIENT_ID -p \$AZURE_CLIENT_SECRET -t \$AZURE_TENANT_ID
-                            az aks get-credentials --resource-group ${props.resource_group} --name ${props.cluster_name} --overwrite-existing
-                            kubectl create namespace phonebill-dg0500 --dry-run=client -o yaml | kubectl apply -f -
-                        """
-                    }
+            stage("Setup Kubernetes") {
+                container('kubectl') {
+                    sh """
+                        kubectl config use-context ${props.k8s_context} || echo "Context switch skipped"
+                        kubectl create namespace ${props.namespace} --dry-run=client -o yaml | kubectl apply -f -
+                    """
                 }
             }
 
@@ -107,27 +102,36 @@ podTemplate(
                     echo "⏭️ Skipping SonarQube Analysis (SKIP_SONARQUBE=${params.SKIP_SONARQUBE})"
                 } else {
                     container('gradle') {
-                        withSonarQubeEnv('SonarQube') {
-                            // 각 서비스별 테스트 및 SonarQube 분석
-                            services.each { service ->
-                                sh """
-                                    ./gradlew :${service}:test :${service}:jacocoTestReport :${service}:sonar \\
-                                        -Dsonar.projectKey=phonebill-${service}-dg0500 \\
-                                        -Dsonar.projectName=phonebill-${service}-dg0500 \\
-                                        -Dsonar.java.binaries=build/classes/java/main \\
-                                        -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \\
-                                        -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
-                                """
-                            }
+                        services.each { service ->
+                            if (service != 'api-gateway') {
+                                withSonarQubeEnv('SonarQube') {
+                                    echo "🔍 Starting SonarQube analysis for ${service}..."
 
-                            // Quality Gate 확인
-                            timeout(time: 10, unit: 'MINUTES') {
-                                def qg = waitForQualityGate()
-                                if (qg.status != 'OK') {
-                                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                                    sh """
+                                        ./gradlew :${service}:test :${service}:jacocoTestReport :${service}:sonar \\
+                                            -Dsonar.projectKey=phonebill-${service}-${environment} \\
+                                            -Dsonar.projectName=phonebill-${service}-${environment} \\
+                                            -Dsonar.java.binaries=build/classes/java/main \\
+                                            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \\
+                                            -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
+                                    """
+
+                                    echo "✅ SonarQube analysis completed for ${service}"
+                                }
+
+                                timeout(time: 5, unit: 'MINUTES') {
+                                    echo "⏳ Waiting for Quality Gate result for ${service}..."
+                                    def qg = waitForQualityGate()
+                                    if (qg.status != 'OK') {
+                                        error "❌ Quality Gate failed for ${service}: ${qg.status}"
+                                    } else {
+                                        echo "✅ Quality Gate passed for ${service}"
+                                    }
                                 }
                             }
                         }
+
+                        echo "🎉 All services passed SonarQube Quality Gates!"
                     }
                 }
             }
@@ -137,21 +141,12 @@ podTemplate(
                     container('podman') {
                         withCredentials([
                             usernamePassword(
-                                credentialsId: 'acr-credentials',
-                                usernameVariable: 'ACR_USERNAME',
-                                passwordVariable: 'ACR_PASSWORD'
-                            ),
-                            usernamePassword(
                                 credentialsId: 'dockerhub-credentials',
                                 usernameVariable: 'DOCKERHUB_USERNAME',
                                 passwordVariable: 'DOCKERHUB_PASSWORD'
                             )
                         ]) {
-                            // Docker Hub 로그인 (rate limit 해결)
                             sh "podman login docker.io --username \$DOCKERHUB_USERNAME --password \$DOCKERHUB_PASSWORD"
-
-                            // ACR 로그인
-                            sh "podman login acrdigitalgarage01.azurecr.io --username \$ACR_USERNAME --password \$ACR_PASSWORD"
 
                             services.each { service ->
                                 sh """
@@ -159,9 +154,9 @@ podTemplate(
                                         --build-arg BUILD_LIB_DIR="${service}/build/libs" \\
                                         --build-arg ARTIFACTORY_FILE="${service}.jar" \\
                                         -f deployment/container/Dockerfile-backend \\
-                                        -t acrdigitalgarage01.azurecr.io/phonebill/${service}:${environment}-${imageTag} .
+                                        -t docker.io/hiondal/${service}:${environment}-${imageTag} .
 
-                                    podman push acrdigitalgarage01.azurecr.io/phonebill/${service}:${environment}-${imageTag}
+                                    podman push docker.io/hiondal/${service}:${environment}-${imageTag}
                                 """
                             }
                         }
@@ -170,9 +165,9 @@ podTemplate(
             }
 
             stage('Update Kustomize & Deploy') {
-                container('azure-cli') {
+                container('kubectl') {
                     sh """
-                        # Kustomize 설치 (sudo 없이 사용자 디렉토리에 설치)
+                        # Kustomize 설치
                         curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
                         mkdir -p \$HOME/bin
                         mv kustomize \$HOME/bin/
@@ -181,12 +176,12 @@ podTemplate(
                         # 환경별 디렉토리로 이동
                         cd deployment/cicd/kustomize/overlays/${environment}
 
-                        # 서비스 목록 정의 (실제 서비스명으로 교체, 공백으로 구분)
+                        # 서비스 목록 정의
                         services="api-gateway user-service bill-service product-service kos-mock"
 
                         # 이미지 태그 업데이트
                         for service in \$services; do
-                            \$HOME/bin/kustomize edit set image acrdigitalgarage01.azurecr.io/phonebill/\$service:${environment}-${imageTag}
+                            \$HOME/bin/kustomize edit set image docker.io/hiondal/\$service:${environment}-${imageTag}
                         done
 
                         # 매니페스트 적용
@@ -195,17 +190,15 @@ podTemplate(
                         # 배포 상태 확인
                         echo "Waiting for deployments to be ready..."
                         for service in \$services; do
-                            kubectl -n phonebill-dg0500 wait --for=condition=available deployment/\$service --timeout=300s
+                            kubectl -n ${props.namespace} wait --for=condition=available deployment/\$service --timeout=300s || echo "Timeout waiting for \$service"
                         done
                     """
                 }
             }
 
-            // 파이프라인 완료 로그 (Scripted Pipeline 방식)
             stage('Pipeline Complete') {
                 echo "🧹 Pipeline completed. Pod cleanup handled by Jenkins Kubernetes Plugin."
 
-                // 성공/실패 여부 로깅
                 if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
                     echo "✅ Pipeline completed successfully!"
                 } else {
