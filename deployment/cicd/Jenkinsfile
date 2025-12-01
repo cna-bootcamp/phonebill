@@ -48,7 +48,7 @@ podTemplate(
         ),
         containerTemplate(
             name: 'kubectl',
-            image: 'bitnami/kubectl:latest',
+            image: 'lachlanevenson/k8s-kubectl:latest',
             command: 'cat',
             ttyEnabled: true,
             resourceRequestCpu: '200m',
