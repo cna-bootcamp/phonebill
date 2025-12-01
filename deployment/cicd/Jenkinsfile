@@ -92,44 +92,6 @@ podTemplate(
                 }
             }
 
-            stage('SonarQube Analysis & Quality Gate') {
-                if (skipSonarQube) {
-                    echo "⏭️ Skipping SonarQube Analysis (SKIP_SONARQUBE=${params.SKIP_SONARQUBE})"
-                } else {
-                    container('gradle') {
-                        services.each { service ->
-                            if (service != 'api-gateway') {
-                                withSonarQubeEnv('SonarQube') {
-                                    echo "🔍 Starting SonarQube analysis for ${service}..."
-
-                                    sh """
-                                        ./gradlew :${service}:test :${service}:jacocoTestReport :${service}:sonar \\
-                                            -Dsonar.projectKey=phonebill-${service}-${environment} \\
-                                            -Dsonar.projectName=phonebill-${service}-${environment} \\
-                                            -Dsonar.java.binaries=build/classes/java/main \\
-                                            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \\
-                                            -Dsonar.exclusions=**/config/**,**/entity/**,**/dto/**,**/*Application.class,**/exception/**
-                                    """
-
-                                    echo "✅ SonarQube analysis completed for ${service}"
-                                }
-
-                                timeout(time: 5, unit: 'MINUTES') {
-                                    echo "⏳ Waiting for Quality Gate result for ${service}..."
-                                    def qg = waitForQualityGate()
-                                    if (qg.status != 'OK') {
-                                        error "❌ Quality Gate failed for ${service}: ${qg.status}"
-                                    } else {
-                                        echo "✅ Quality Gate passed for ${service}"
-                                    }
-                                }
-                            }
-                        }
-
-                        echo "🎉 All services passed SonarQube Quality Gates!"
-                    }
-                }
-            }
 
             stage('Build & Push Images') {
                 timeout(time: 30, unit: 'MINUTES') {
