@@ -78,9 +78,11 @@ podTemplate(
 
             stage("Setup Kubernetes") {
                 container('kubectl') {
+                    echo "🔧 Setting up Kubernetes namespace: ${props.namespace}"
                     sh """
                         kubectl create namespace ${props.namespace} --dry-run=client -o yaml | kubectl apply -f -
                     """
+                    echo "✅ Kubernetes namespace setup completed"
                 }
             }
 
