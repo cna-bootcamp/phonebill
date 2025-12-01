@@ -82,7 +82,6 @@ podTemplate(
             stage("Setup Kubernetes") {
                 container('kubectl') {
                     sh """
-                        kubectl config use-context ${props.k8s_context} || echo "Context switch skipped"
                         kubectl create namespace ${props.namespace} --dry-run=client -o yaml | kubectl apply -f -
                     """
                 }
