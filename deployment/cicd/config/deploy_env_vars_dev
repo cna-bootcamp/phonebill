@@ -1,4 +1,3 @@
-# Dev Environment Configuration
-# Minikube Remote 환경 설정
-k8s_context=minikube-remote
+# dev Environment Configuration
+context=minikube
 namespace=phonebill

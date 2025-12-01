@@ -1,27 +1,24 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: phonebill-prod
+namespace: phonebill
 
 resources:
   - ../../base
 
 patches:
-  # Common patches
   - path: cm-common-patch.yaml
     target:
       kind: ConfigMap
-      name: phonebill-common-config
+      name: cm-common
   - path: secret-common-patch.yaml
     target:
       kind: Secret
-      name: phonebill-common-secret
+      name: secret-common
   - path: ingress-patch.yaml
     target:
       kind: Ingress
       name: phonebill-ingress
-
-  # Deployment patches
   - path: deployment-api-gateway-patch.yaml
     target:
       kind: Deployment
@@ -42,29 +39,27 @@ patches:
     target:
       kind: Deployment
       name: kos-mock
-
-  # Service Secret patches
   - path: secret-user-service-patch.yaml
     target:
       kind: Secret
-      name: user-service-db-secret
+      name: secret-user-service
   - path: secret-bill-service-patch.yaml
     target:
       kind: Secret
-      name: bill-service-db-secret
+      name: secret-bill-service
   - path: secret-product-service-patch.yaml
     target:
       kind: Secret
-      name: product-service-db-secret
+      name: secret-product-service
 
 images:
   - name: docker.io/hiondal/api-gateway
-    newTag: latest
+    newTag: prod-latest
   - name: docker.io/hiondal/user-service
-    newTag: latest
+    newTag: prod-latest
   - name: docker.io/hiondal/bill-service
-    newTag: latest
+    newTag: prod-latest
   - name: docker.io/hiondal/product-service
-    newTag: latest
+    newTag: prod-latest
   - name: docker.io/hiondal/kos-mock
-    newTag: latest
+    newTag: prod-latest

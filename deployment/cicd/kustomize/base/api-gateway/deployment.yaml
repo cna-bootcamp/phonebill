@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway
-  
   labels:
     app: api-gateway
     app.kubernetes.io/part-of: phonebill
@@ -25,11 +24,11 @@ spec:
           name: http
         envFrom:
         - configMapRef:
-            name: phonebill-common-config
+            name: cm-common
         - configMapRef:
-            name: api-gateway-config
+            name: cm-api-gateway
         - secretRef:
-            name: phonebill-common-secret
+            name: secret-common
         resources:
           requests:
             cpu: "256m"

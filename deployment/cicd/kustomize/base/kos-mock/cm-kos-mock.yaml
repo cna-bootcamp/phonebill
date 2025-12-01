@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kos-mock-config
-  
+  name: cm-kos-mock
   labels:
     app: kos-mock
     app.kubernetes.io/part-of: phonebill

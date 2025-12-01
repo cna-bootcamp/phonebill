@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-service
-  
   labels:
     app: user-service
     app.kubernetes.io/part-of: phonebill
@@ -25,13 +24,13 @@ spec:
           name: http
         envFrom:
         - configMapRef:
-            name: phonebill-common-config
+            name: cm-common
         - configMapRef:
-            name: user-service-config
+            name: cm-user-service
         - secretRef:
-            name: phonebill-common-secret
+            name: secret-common
         - secretRef:
-            name: user-service-db-secret
+            name: secret-user-service
         resources:
           requests:
             cpu: "256m"

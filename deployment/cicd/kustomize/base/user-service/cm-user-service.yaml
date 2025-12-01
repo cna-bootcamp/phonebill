@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: user-service-config
-  
+  name: cm-user-service
   labels:
     app: user-service
     app.kubernetes.io/part-of: phonebill

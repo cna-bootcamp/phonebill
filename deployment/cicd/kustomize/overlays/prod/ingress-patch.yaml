@@ -16,7 +16,7 @@ spec:
   tls:
   - hosts:
     - phonebill.example.com
-    secretName: phonebill-prod-tls
+    secretName: phonebill-tls
   rules:
   - host: phonebill.example.com
     http:
