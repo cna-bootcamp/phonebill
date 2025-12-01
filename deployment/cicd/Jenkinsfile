@@ -18,11 +18,6 @@ podTemplate(
         spec:
           terminationGracePeriodSeconds: 3
           restartPolicy: Never
-          tolerations:
-          - effect: NoSchedule
-            key: dedicated
-            operator: Equal
-            value: cicd
     ''',
     containers: [
         containerTemplate(
