@@ -76,16 +76,6 @@ podTemplate(
                 props = readProperties file: "deployment/cicd/config/deploy_env_vars_${environment}"
             }
 
-            stage("Setup Kubernetes") {
-                container('kubectl') {
-                    echo "🔧 Setting up Kubernetes namespace: ${props.namespace}"
-                    sh """
-                        kubectl create namespace ${props.namespace} --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                    echo "✅ Kubernetes namespace setup completed"
-                }
-            }
-
             stage('Build') {
                 container('gradle') {
                     sh """
@@ -174,6 +164,7 @@ podTemplate(
 
             stage('Update Kustomize & Deploy') {
                 container('kubectl') {
+                    def namespace = props.namespace
                     sh """
                         # Kustomize 설치 (sudo 없이 사용자 디렉토리에 설치)
                         curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
@@ -198,7 +189,7 @@ podTemplate(
                         # 배포 상태 확인
                         echo "Waiting for deployments to be ready..."
                         for service in \$services; do
-                            kubectl -n ${props.namespace} wait --for=condition=available deployment/\$service --timeout=300s
+                            kubectl -n ${namespace} wait --for=condition=available deployment/\$service --timeout=300s
                         done
                     """
                 }
