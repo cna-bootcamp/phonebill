@@ -79,7 +79,6 @@ podTemplate(
             stage("Setup Kubernetes") {
                 container('kubectl') {
                     sh """
-                        kubectl config use-context ${props.context}
                         kubectl create namespace ${props.namespace} --dry-run=client -o yaml | kubectl apply -f -
                     """
                 }
