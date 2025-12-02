@@ -16,7 +16,7 @@ spec:
       - name: phonebill
       containers:
       - name: api-gateway
-        image: acrdigitalgarage01.azurecr.io/phonebill/api-gateway:latest
+        image: docker.io/hiondal/api-gateway:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

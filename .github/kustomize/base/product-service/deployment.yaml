@@ -16,7 +16,7 @@ spec:
       - name: phonebill
       containers:
       - name: product-service
-        image: acrdigitalgarage01.azurecr.io/phonebill/product-service:latest
+        image: docker.io/hiondal/product-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8083
