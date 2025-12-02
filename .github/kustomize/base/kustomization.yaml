@@ -8,7 +8,6 @@ resources:
   # Common resources
   - common/cm-common.yaml
   - common/secret-common.yaml
-  - common/secret-imagepull.yaml
   - common/ingress.yaml
 
   # API Gateway
